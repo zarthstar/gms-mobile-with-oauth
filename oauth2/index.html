@@ -1,0 +1,61 @@
+<html>
+<head>
+<title>JQuery OAuth Sample</title>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+function setAccessToken() {
+	hash = location.hash;
+	if (hash) {
+      accessToken = hash.match(/[?&#]access_token=([^&]*)?/)[1];
+      if (accessToken){
+        sessionStorage.setItem( 'accessToken', accessToken );
+        window.location.hash = "";
+      }
+    } else {
+    	accessToken = sessionStorage.getItem('accessToken');
+    }
+    
+    $.ajaxSetup({
+        headers: {
+          'Authorization': "Bearer " + accessToken
+        }
+      });
+}
+
+function requestResource() {
+
+  if(sessionStorage.getItem('accessToken')){
+    $("token").text(accessToken);
+
+    $.ajax({
+        url: localStorage.getItem('settings-api') + '/countries',
+        dataType: "json",
+        success:function(response) {
+            $("data").text(response.total);
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            sessionStorage.removeItem( 'accessToken');
+        }
+    });
+  }
+}
+
+$(document).ready(function() {
+	$('#auth').attr('href', localStorage.getItem('settings-auth') + '?response_type=token&client_id=' + localStorage.getItem('settings-appKey'));
+    setAccessToken();
+	requestResource();
+});
+ 
+</script>
+<a id="auth">Sign In</a>
+<div><b>Token:</b> <token/></div>
+<div><b>Data:</b> <data/></div>
+ 
+</body>
+</html>
